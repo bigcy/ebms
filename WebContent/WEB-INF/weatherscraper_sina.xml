@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config charset="gb2312">
+	<var-def name="citysvalue">
+		%B1%B1%BE%A9
+		%BA%CF%B7%CA
+		%D6%D8%C7%EC
+		%B8%A3%D6%DD
+		%C0%BC%D6%DD
+		%B9%E3%D6%DD
+		%C4%CF%C4%FE
+		%B9%F3%D1%F4
+		%BA%A3%BF%DA
+		%CA%AF%BC%D2%D7%AF
+		%D6%A3%D6%DD
+		%CE%E4%BA%BA
+		%B3%A4%C9%B3
+		%B9%FE%B6%FB%B1%F5
+		%B3%A4%B4%BA
+		%C4%CF%BE%A9
+		%C4%CF%B2%FD
+		%C9%F2%D1%F4
+		%BA%F4%BA%CD%BA%C6%CC%D8
+		%D2%F8%B4%A8
+		%CE%F7%C4%FE
+		%BC%C3%C4%CF
+		%CE%F7%B0%B2
+		%CC%AB%D4%AD
+		%C9%CF%BA%A3
+		%B3%C9%B6%BC
+		%CC%EC%BD%F2
+		%C0%AD%C8%F8
+		%CE%DA%C2%B3%C4%BE%C6%EB
+		%C0%A5%C3%F7
+		%BA%BC%D6%DD
+        </var-def>
+	<loop item="value" index="i">
+		<list>
+			<var name="citysvalue" />
+		</list>
+		<body>
+			<var-def name="city">
+				<script return="cityvalue"><![CDATA[
+                                        switch(Integer.parseInt(i.toString())) {
+                                                case 1: cityvalue="010"; break;
+                                                case 2: cityvalue="0551"; break;
+                                                case 3: cityvalue="023"; break;
+                                                case 4: cityvalue="0591"; break;
+                                                case 5: cityvalue="0931"; break;
+                                                case 6: cityvalue="020"; break;
+                                                case 7: cityvalue="0771"; break;
+                                                case 8: cityvalue="0851"; break;
+                                                case 9: cityvalue="0898"; break;
+                                                case 10: cityvalue="0311"; break;
+                                                case 11: cityvalue="0371"; break;
+                                                case 12: cityvalue="027"; break;
+                                                case 13: cityvalue="0731"; break;
+                                                case 14: cityvalue="0451"; break;
+                                                case 15: cityvalue="0431"; break;
+                                                case 16: cityvalue="025"; break;
+                                                case 17: cityvalue="0791"; break;
+                                                case 18: cityvalue="024"; break;
+                                                case 19: cityvalue="0471"; break;
+                                                case 20: cityvalue="0951"; break;
+                                                case 21: cityvalue="0971"; break;
+                                                case 22: cityvalue="0531"; break;
+                                                case 23: cityvalue="029"; break;
+                                                case 24: cityvalue="0351"; break;
+                                                case 25: cityvalue="021"; break;
+                                                case 26: cityvalue="028"; break;
+                                                case 27: cityvalue="022"; break;
+                                                case 28: cityvalue="0891"; break;
+                                                case 29: cityvalue="0991"; break;
+                                                case 30: cityvalue="0871"; break;
+                                                case 31: cityvalue="0571"; break;
+                                        }
+                                ]]></script>
+			</var-def>
+			<file action="write" path="weather_${city}.xml" charset="gb2312">
+				<xquery>
+					<xq-param name="doc">
+						<html-to-xml>
+							<http url="http://php.weather.sina.com.cn/search.php?city=${value}"
+								charset="gb2312" />
+						</html-to-xml>
+					</xq-param>
+					<xq-expression><![CDATA[
+                                        declare variable $doc as node() external;
+                                        
+                                        let $updatetime := data($doc//div[@class="tab_hd clearfix"]//span[2])
+                                        
+                                        let $day := $doc//div[@class="m_left"]/div[@class="day"]
+                                        let $night := $doc//div[@class="m_left"]/div[@class="night"]
+                                        let $daycond_pic := data($day/div[@class="icon_weather"]/@style)
+                                        let $daycond_txt := data($day/ul[@class="detail"][1]/li[2])
+                                        let $daytemp := data($day/ul[@class="detail"]//span[@class="fs_30 tpte"])
+                                        let $sendibletemp := data($day//span[@class="fs_24 tpte"])
+                                        let $nightcond_pic := data($night/div[@class="icon_weather"]/@style)
+                                        let $nightcond_txt := data($night/ul[@class="detail"][1]/li[2])
+                                        let $nighttemp := data($night/ul[@class="detail"]//span[@class="fs_30 tpte"])
+                                        let $daywind := data($day//ul[@class="detail"]/li[3])
+                                        let $nightwind := data($night//ul[@class="detail"]/li[3])
+                                        let $daydate := data($day/h5)
+                                        
+                                        let $tomorrow := $doc//div[@class="weather_list clearfix"][1]/div[@class="mod_02"][1]
+                                        let $tomorrow_day_cond_pic := data($tomorrow/div[@class="mod_03"][1]/div[@class="icon_mid_weather"]/@style)
+                                        let $tomorrow_night_cond_pic := data($tomorrow/div[@class="mod_03"][2]/div[@class="icon_mid_weather"]/@style)
+                                        let $tomorrow_day_cond_txt := data($tomorrow/div[@class="mod_03"][1]/ul[1]/li[1])
+                                        let $tomorrow_night_cond_txt := data($tomorrow/div[@class="mod_03"][2]/ul[1]/li[1])
+                                        let $tomorrow_day_temp := data($tomorrow/div[@class="mod_03"][1]/ul[1]/li[@class="tpte"])
+                                        let $tomorrow_night_temp := data($tomorrow/div[@class="mod_03"][2]/ul[1]/li[@class="tpte"])
+                                        let $tomorrow_day_wind := data($tomorrow/div[@class="mod_03"][1]/ul[1]/li[3])
+                                        let $tomorrow_day_winddirect := data($tomorrow/div[@class="mod_03"][1]/ul[1]/li[4])
+                                        let $tomorrow_night_wind := data($tomorrow/div[@class="mod_03"][2]/ul[1]/li[3])
+                                        let $tomorrow_night_winddirect := data($tomorrow/div[@class="mod_03"][2]/ul[1]/li[4])
+                                        let $tomorrowdate := data($tomorrow/h4)
+                                        
+                                        let $aftertomorrow := $doc//div[@class="weather_list clearfix"][1]/div[@class="mod_02"][2]
+                                        let $aftertomorrow_day_cond_pic := data($aftertomorrow/div[@class="mod_03"][1]/div[@class="icon_mid_weather"]/@style)
+                                        let $aftertomorrow_night_cond_pic := data($aftertomorrow/div[@class="mod_03"][2]/div[@class="icon_mid_weather"]/@style)
+                                        let $aftertomorrow_day_cond_txt := data($aftertomorrow/div[@class="mod_03"][1]/ul[1]/li[1])
+                                        let $aftertomorrow_night_cond_txt := data($aftertomorrow/div[@class="mod_03"][2]/ul[1]/li[1])
+                                        let $aftertomorrow_day_temp := data($aftertomorrow/div[@class="mod_03"][1]/ul[1]/li[@class="tpte"])
+                                        let $aftertomorrow_night_temp := data($aftertomorrow/div[@class="mod_03"][2]/ul[1]/li[@class="tpte"])
+                                        let $aftertomorrow_day_wind := data($aftertomorrow/div[@class="mod_03"][1]/ul[1]/li[3])
+                                        let $aftertomorrow_day_winddirect := data($aftertomorrow/div[@class="mod_03"][1]/ul[1]/li[4])
+                                        let $aftertomorrow_night_wind := data($aftertomorrow/div[@class="mod_03"][2]/ul[1]/li[3])
+                                        let $aftertomorrow_night_winddirect := data($aftertomorrow/div[@class="mod_03"][2]/ul[1]/li[4])
+                                        let $aftertomorrowdate := data($aftertomorrow/h4)
+                                        
+                                                let $xml := <weather>
+                                                				<updatetime>{$updatetime}</updatetime>
+                                                                <detail>
+                                                                	<date>{$daydate}</date>
+                                                                    <daycondpic>{$daycond_pic}</daycondpic>
+                                                                    <nightcondpic>{$nightcond_pic}</nightcondpic>
+                                                                    <daycondtxt>{$daycond_txt}</daycondtxt>
+                                                                    <nightcondtxt>{$nightcond_txt}</nightcondtxt>
+                                                                    <daytemp>{$daytemp}</daytemp>
+                                                                    <nighttemp>{$nighttemp}</nighttemp>
+                                                                    <daywind>{$daywind}</daywind>
+                                                                    <nightwind>{$nightwind}</nightwind>
+                                                                </detail>
+
+                                                                <detail>
+                                                                	<date>{$tomorrowdate}</date>
+                                                                    <daycondpic>{$tomorrow_day_cond_pic}</daycondpic>
+                                                                    <nightcondpic>{$tomorrow_night_cond_pic}</nightcondpic>
+                                                                    <daycondtxt>{$tomorrow_day_cond_txt}</daycondtxt>
+                                                                    <nightcondtxt>{$tomorrow_night_cond_txt}</nightcondtxt>
+                                                                    <daytemp>{$tomorrow_day_temp}</daytemp>
+                                                                    <nighttemp>{$tomorrow_night_temp}</nighttemp>
+                                                                    <daywind>{$tomorrow_day_wind}{$tomorrow_day_winddirect}</daywind>
+                                                                    <nightwind>{$tomorrow_night_wind}{$tomorrow_night_winddirect}</nightwind>
+                                                                </detail>
+                                                                
+                                                                <detail>
+                                                                	<date>{$aftertomorrowdate}</date>
+                                                                    <daycondpic>{$aftertomorrow_day_cond_pic}</daycondpic>
+                                                                    <nightcondpic>{$aftertomorrow_night_cond_pic}</nightcondpic>
+                                                                    <daycondtxt>{$aftertomorrow_day_cond_txt}</daycondtxt>
+                                                                    <nightcondtxt>{$aftertomorrow_night_cond_txt}</nightcondtxt>
+                                                                    <daytemp>{$aftertomorrow_day_temp}</daytemp>
+                                                                    <nighttemp>{$aftertomorrow_night_temp}</nighttemp>
+                                                                    <daywind>{$aftertomorrow_day_wind}{$aftertomorrow_day_winddirect}</daywind>
+                                                                    <nightwind>{$aftertomorrow_night_wind}{$aftertomorrow_night_winddirect}</nightwind>
+                                                                </detail>
+
+                                                             </weather>
+                                        return $xml
+                                    ]]></xq-expression>
+				</xquery>
+			</file>
+		</body>
+	</loop>
+
+</config>

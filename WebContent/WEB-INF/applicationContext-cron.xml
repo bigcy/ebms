@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>	
+<!--
+	1．秒（0–59）, - * / 
+	2．分钟（0–59）
+	3．小时（0–23）
+	4．月份中的日期（1–31）
+	5．月份（1–12或JAN–DEC）
+	6．星期中的日期（1–7  1=SUN 或SUN–SAT）
+	7．年份（1970–2099）
+	每一个元素都可以显式地规定一个值（如6），一个区间（如9-12），一个列表（如9，11，13）或一个通配符（如*）。
+	“月份中的日期”和“星期中的日期”这两个元素是互斥的，因此应该通过设置一个问号（？）来表明你不想设置的那个字段。
+
+	星号(*)：可用在所有字段中，表示对应时间域的每一个时刻，例如，*在分钟字段时，表示“每分钟”；
+	问号（?）：该字符只在日期和星期字段中使用，它通常指定为“无意义的值”，相当于点位符；
+	减号(-)：表达一个范围，如在小时字段中使用“10-12”，则表示从10到12点，即10,11,12；
+	逗号(,)：表达一个列表值，如在星期字段中使用“MON,WED,FRI”，则表示星期一，星期三和星期五；
+	斜杠(/)：x/y表达一个等步长序列，x为起始值，y为增量步长值。如在分钟字段中使用0/15，则表示为0,15,30和45秒，而5/15在分钟字段中表示5,20,35,50，你也可以使用*/y，它等同于0/y；
+	
+	一些cron表达式的例子
+	
+	表   达   式　　　　　　　　　　　　　　　　　　　　意     义
+	
+	0 0 10,14,16 * * ?                     每天上午10点，下午2点和下午4点
+	0 0,15,30,45 * 1-10 * ?                每月前10天每隔15分钟
+	30 0 0 1 1 ? 2012                      在2012年1月1日午夜过30秒时
+	0 0 8-5 ? * MON-FRI                    每个工作日的工作时间 
+	0 0/1 * * * ?                    	        每隔一分钟
+-->
+	<!-- 日志处理 -->
+	<bean id="readLog" class="com.ebupt.ebms.crontab.ReadLog" />
+	
+	<!-- 定时任务 开始SchedulerFactoryBean -->
+	<bean id="logjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<!-- 定时执行的类 -->
+			<ref bean="readLog" />
+		</property>
+		<property name="targetMethod">
+			<!-- 定时执行的类方法 -->
+			<value>readlog</value>
+		</property>
+	</bean>
+	
+	<bean id="logcronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="logjobDetail" />
+		</property>
+		<!--在每天晚上22:30分执行一次 -->
+		<property name="cronExpression">
+			<value>0 30 22 * * ?</value>
+		</property>
+	</bean>
+	
+	<!-- 获取天气 -->
+	<bean id="weatherGetSina" class="com.ebupt.ebms.crontab.WeatherGetSina" />
+	
+	<bean id="weatherjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<!-- 定时执行的类 -->
+			<ref bean="weatherGetSina" />
+		</property>
+		<property name="targetMethod">
+			<!-- 定时执行的类方法 -->
+			<value>getWeather</value>
+		</property>
+	</bean>
+	
+	<bean id="weathercronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="weatherjobDetail" />
+		</property>
+		<!--在每天上午09:00、下午18点执行一次 -->
+		<property name="cronExpression">
+			<value>0 0 9,18 * * ?</value>
+		</property>
+	</bean>
+	
+	<!-- 处理任务状态 -->
+	<bean id="dealPlayTaskStatus" class="com.ebupt.ebms.crontab.DealPlayTaskStatus" />
+	
+	<bean id="playTaskjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<!-- 定时执行的类 -->
+			<ref bean="dealPlayTaskStatus" />
+		</property>
+		<property name="targetMethod">
+			<!-- 定时执行的类方法 -->
+			<value>updatePlayTaskStatus</value>
+		</property>
+	</bean>
+	
+	<bean id="playTaskcronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="playTaskjobDetail" />
+		</property>
+		<!--在每天凌晨1点执行一次 -->
+		<property name="cronExpression">
+			<value>0 0 1 * * ?</value>
+		</property>
+	</bean>
+	
+	
+	
+	<!-- 终端在线时长入库 -->
+	<bean id="statisticsOnlineTime" class="com.ebupt.ebms.crontab.StatisticsOnlineTime" />
+	
+	<bean id="statisticsDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<!-- 定时执行的类 -->
+			<ref bean="statisticsOnlineTime" />
+		</property>
+		<property name="targetMethod">
+			<!-- 定时执行的类方法 -->
+			<value>termOnlineTime</value>
+		</property>
+	</bean>
+	
+	<bean id="onlinecronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="statisticsDetail" />
+		</property>
+		<!--每小时执行一次 -->
+		<property name="cronExpression">
+			<!-- <value>0 0 0/1 * * ?</value> -->
+			<value>0 0/10 * * * ?</value>
+		</property>
+	</bean>
+	
+	<!-- //////////////////////////////////////////////////////////////////////////// -->
+	
+	<!-- 触发器工厂，将所有的定时任务都注入工厂-->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<!-- 添加触发器 -->
+		<property name="triggers">
+			<list>
+				<!-- 将上面定义的测试定时任务注入（可以定义多个定时任务，同时注入）-->
+				<!--
+				<ref local="logcronTrigger" />
+				<ref local="weathercronTrigger" />
+				 -->
+				<ref local="playTaskcronTrigger" />
+				<ref local="onlinecronTrigger" />
+			</list>
+		</property>
+	</bean>
+	<!-- 定时任务 结束 -->
+	
+	
+	
+	
+	
+	
+	
+	<!-- TimerFactoryBean begin-->
+	<bean id="dealSQLTimerTask" class="com.ebupt.ebms.crontab.DealSQLTimerTask" />
+
+	<bean id="dealSQLScheduledTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<!-- wait 10 seconds before starting execution -->
+		<property name="delay" value="10000" />
+		<!-- run every 1 seconds -->
+		<property name="period" value="10" />
+		<property name="timerTask" ref="dealSQLTimerTask" />
+	</bean>
+	
+	
+	<bean id="termOperLogTimerTask" class="com.ebupt.ebms.crontab.TermOperLogTimerTask" />
+
+	<bean id="termOperLogScheduledTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<!-- wait 10 seconds before starting execution -->
+		<property name="delay" value="10000" />
+		<!-- run every 1 seconds -->
+		<property name="period" value="1000" />
+		<property name="timerTask" ref="termOperLogTimerTask" />
+	</bean>
+	
+	<bean id="termIsOnlineTimerTask" class="com.ebupt.ebms.crontab.TermIsOnlineTimerTask" />
+
+	<bean id="termIsOnlineScheduledTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<!-- wait 10 seconds before starting execution -->
+		<property name="delay" value="10000" />
+		<!-- run every 1 hour -->
+		<property name="period" value="3600000" />
+		<property name="timerTask" ref="termIsOnlineTimerTask" />
+	</bean>
+
+
+	<bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
+		<property name="scheduledTimerTasks">
+			<list>
+				<ref bean="dealSQLScheduledTask" />
+				<ref bean="termOperLogScheduledTask" />
+				<ref bean="termIsOnlineScheduledTask" />
+			</list>
+		</property>
+	</bean>  
+	<!-- TimerFactoryBean end-->
+</beans>
